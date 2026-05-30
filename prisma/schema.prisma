@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int   @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  role     Role  @default(USER)
+  
+  bookings Booking[]
+}
+
+model Bus {
+  id          Int    @id @default(autoincrement())
+  name        String
+  fromCity    String
+  toCity      String
+  price       Int
+  seats       Int
+
+  bookings Booking[]
+}
+
+model Booking {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  busId        Int
+  jumlahTiket  Int
+  totalHarga   Int
+  status       String   @default("PENDING")
+
+  user User @relation(fields: [userId], references: [id])
+  bus  Bus  @relation(fields: [busId], references: [id])
+
+  payment Payment?   // 👈 TAMBAH INI
+}
+
+model Payment {
+  id            Int            @id @default(autoincrement())
+  bookingId     Int            @unique   // 👈 TAMBAH INI
+  paymentMethod PaymentMethod
+  paymentStatus PaymentStatus  @default(SUCCESS)
+  createdAt     DateTime       @default(now())
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+enum PaymentMethod {
+  CASH
+  EWALLET
+  TRANSFER
+}
+
+enum PaymentStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum Role {
+  ADMIN
+  USER
+}
