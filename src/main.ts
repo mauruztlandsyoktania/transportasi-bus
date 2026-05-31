@@ -15,11 +15,20 @@ async function bootstrap() {
     }),
   );
 
-  // 📘 SWAGGER CONFIG (FIXED JWT)
+  // 🚀 IMPORTANT: Railway PORT + fallback local
+  const port = process.env.PORT || 3000;
+
+  // 🌐 FIX BASE URL (Railway + local safe)
+  const baseUrl =
+    process.env.BASE_URL ||
+    `https://transportasi-bus-production.up.railway.app`;
+
+  // 📘 SWAGGER CONFIG
   const config = new DocumentBuilder()
     .setTitle('Transportasi Bus API')
     .setDescription('Backend API Sistem Pemesanan Tiket Bus')
     .setVersion('1.0')
+    .addServer(baseUrl)
     .addBearerAuth(
       {
         type: 'http',
@@ -39,10 +48,11 @@ async function bootstrap() {
     },
   });
 
-  await app.listen(process.env.PORT ?? 3000);
+  // 🔥 CRITICAL FIX: Railway must bind 0.0.0.0
+  await app.listen(port, '0.0.0.0');
 
-  console.log(`🚀 Server running on: http://localhost:3000`);
-  console.log(`📘 Swagger on: http://localhost:3000/api`);
+  console.log(`🚀 Server running on port: ${port}`);
+  console.log(`📘 Swagger: ${baseUrl}/api`);
 }
 
 bootstrap();
