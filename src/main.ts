@@ -2,12 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-console.log = () => {};
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 🔥 GLOBAL VALIDATION
+  // 1. CORS ENABLE (Sangat Penting agar browser di luar server bisa akses Swagger)
+  app.enableCors();
+
+  // 2. GLOBAL VALIDATION
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -16,20 +18,13 @@ async function bootstrap() {
     }),
   );
 
-  // 🚀 IMPORTANT: Railway PORT + fallback local
-  const port = process.env.PORT || 3000;
-
-  // 🌐 FIX BASE URL (Railway + local safe)
-  const baseUrl =
-    process.env.BASE_URL ||
-    `https://transportasi-bus-production.up.railway.app`;
-
-  // 📘 SWAGGER CONFIG
+  // 3. SWAGGER CONFIG
   const config = new DocumentBuilder()
     .setTitle('Transportasi Bus API')
     .setDescription('Backend API Sistem Pemesanan Tiket Bus')
     .setVersion('1.0')
-    .addServer(baseUrl)
+    // FIX: Jangan hardcode URL Railway di .addServer() karena Swagger otomatis menyesuaikan dengan domain tempat ia dibuka
+    .addServer('/') 
     .addBearerAuth(
       {
         type: 'http',
@@ -49,11 +44,12 @@ async function bootstrap() {
     },
   });
 
-  // 🔥 CRITICAL FIX: Railway must bind 0.0.0.0
-  await app.listen(process.env.PORT || 3000, '0.0.0.0');
+  // 4. PORT BINDING (Diambil langsung dari variable port untuk konsistensi log)
+  const port = process.env.PORT || 3000;
+  await app.listen(port, '0.0.0.0');
 
   console.log(`🚀 Server running on port: ${port}`);
-  console.log(`📘 Swagger: ${baseUrl}/api`);
+  console.log(`📘 Swagger ready at: /api`);
 }
 
 bootstrap();
