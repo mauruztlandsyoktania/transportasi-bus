@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
+console.log = () => {};
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -49,7 +50,7 @@ async function bootstrap() {
   });
 
   // 🔥 CRITICAL FIX: Railway must bind 0.0.0.0
-  await app.listen(port, '0.0.0.0');
+  await app.listen(process.env.PORT || 3000, '0.0.0.0');
 
   console.log(`🚀 Server running on port: ${port}`);
   console.log(`📘 Swagger: ${baseUrl}/api`);
