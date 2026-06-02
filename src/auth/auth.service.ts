@@ -12,7 +12,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // REGISTER USER BARU
+  // REGISTER USER BARU ATAU ADMIN
   async register(dto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -24,18 +24,30 @@ export class AuthService {
 
     const hash = await bcrypt.hash(dto.password, 10);
 
+    // LOGIKA OTOMATIS: 
+    // Ambil input role dari dto. Jika diisi 'ADMIN', maka akan disimpan sebagai 'ADMIN'.
+    // Jika dikosongkan (undefined), diisi 'USER', atau apa saja, otomatis disimpan sebagai 'USER'.
+    // Casting ke 'any' untuk mengantisipasi jika tipe role di register.dto belum terupdate.
+    const inputRole = (dto as any).role;
+    const finalRole = inputRole === 'ADMIN' ? 'ADMIN' : 'USER';
+
     const user = await this.prisma.user.create({
       data: {
         name: dto.name,
         email: dto.email,
         password: hash,
-        role: 'USER', // Default role saat daftar adalah USER
+        role: finalRole, // Menggunakan role hasil seleksi otomatis
       },
     });
 
     return {
       message: 'Register success',
-      user: { id: user.id, email: user.email, name: user.name },
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        name: user.name, 
+        role: user.role // Menampilkan role yang sukses didaftarkan
+      },
     };
   }
 
@@ -64,7 +76,7 @@ export class AuthService {
     // Mengembalikan Token, Role, Nama, dan Email secara langsung
     return {
       access_token: token,
-      role: user.role, // 👈 Frontend tinggal membaca properti ini ("ADMIN" / "USER")
+      role: user.role, // Frontend tinggal membaca properti ini ("ADMIN" / "USER")
       name: user.name,
       email: user.email,
     };
