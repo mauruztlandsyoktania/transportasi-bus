@@ -23,14 +23,13 @@ model User {
 }
 
 model Bus {
-  id          Int    @id @default(autoincrement())
-  name        String
-  fromCity    String
-  toCity      String
-  price       Int
-  seats       Int
-
-  bookings Booking[]
+  id        Int       @id @default(autoincrement())
+  name      String
+  fromCity  String
+  toCity    String
+  price     Int
+  seats     Int
+  bookings  Booking[] // 👈 Nama relasi di sini (dalam contoh ini adalah "bookings")
 }
 
 model Booking {

@@ -1,53 +1,56 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service'; // Sesuaikan path-nya
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateBusDto } from './dto/create-bus.dto';
+import { UpdateBusDto } from './dto/update-bus.dto';
 
 @Injectable()
 export class BusService {
   constructor(private readonly prisma: PrismaService) {}
 
-  // FIX PERUBAHAN DI SINI: Menyesuaikan dengan model Bus di schema.prisma
-  async create(dto: any) {
+  // 1. TAMBAH BUS
+  async create(createBusDto: CreateBusDto) {
     return this.prisma.bus.create({
-      data: {
-        name: dto.name,
-        fromCity: dto.fromCity,
-        toCity: dto.toCity,
-        price: Number(dto.price), // Memastikan bertipe Int/Number
-        seats: Number(dto.seats), // Memastikan bertipe Int/Number
+      data: createBusDto,
+    });
+  }
+
+  // 2. GET SEMUA BUS (Termasuk Riwayat Pemesanan/Booking)
+  async findAll() {
+    return this.prisma.bus.findMany({
+      include: {
+        bookings: true, // 👈 SESUAIKAN dengan nama relasi booking di schema.prisma milikmu (misal: bookings, Booking, atau transactions)
       },
     });
   }
 
-  async findAll() {
-    return this.prisma.bus.findMany();
-  }
-
+  // 3. GET DETAIL BUS (Termasuk Riwayat Pemesanan/Booking)
   async findOne(id: number) {
     const bus = await this.prisma.bus.findUnique({
       where: { id },
+      include: {
+        bookings: true, // 👈 SESUAIKAN dengan nama relasi booking di schema.prisma milikmu
+      },
     });
-    if (!bus) throw new NotFoundException('Bus not found');
+
+    if (!bus) {
+      throw new NotFoundException(`Bus dengan ID ${id} tidak ditemukan`);
+    }
+
     return bus;
   }
 
-  async update(id: number, dto: any) {
-    await this.findOne(id);
-
+  // 4. EDIT BUS
+  async update(id: number, updateBusDto: UpdateBusDto) {
+    await this.findOne(id); // Cek apakah bus ada
     return this.prisma.bus.update({
       where: { id },
-      data: {
-        name: dto.name,
-        fromCity: dto.fromCity,
-        toCity: dto.toCity,
-        price: dto.price ? Number(dto.price) : undefined,
-        seats: dto.seats ? Number(dto.seats) : undefined,
-      },
+      data: updateBusDto,
     });
   }
 
+  // 5. HAPUS BUS
   async remove(id: number) {
-    await this.findOne(id);
-
+    await this.findOne(id); // Cek apakah bus ada
     return this.prisma.bus.delete({
       where: { id },
     });
