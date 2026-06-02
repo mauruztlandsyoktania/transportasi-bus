@@ -18,27 +18,33 @@ export class JwtAuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Token tidak ditemukan atau tidak valid. Silakan login kembali.');
+      throw new UnauthorizedException('Token tidak ditemukan. Silakan login terlebih dahulu.');
     }
 
     const token = authHeader.split(' ')[1];
 
     try {
-      // 3. Validasi Token JWT (Sekaligus mengekstrak isi payload-nya)
-      const payload = this.jwtService.verify(token, { secret: 'secretKey' }); // Gunakan secretKey milikmu
-      request.user = payload; // Simpan data user ke request
+      // 3. Validasi Token JWT dengan secret_key yang sesuai dengan JwtStrategy kamu
+      const payload = this.jwtService.verify(token, { secret: 'secret_key' }); // 👈 DISAMAKAN MENJADI 'secret_key'
+      request.user = payload; // Menyimpan data user (id, email, role) ke request.user
 
-      // 4. Jika rute ini butuh role spesifik, kita cocokkan
+      // 4. Jika rute ini dikunci untuk role tertentu (seperti CRUD Bus yang dipasang @Roles('ADMIN'))
       if (requiredRoles) {
         const hasRole = requiredRoles.includes(payload.role);
+        
+        // Jika token valid tapi role-nya adalah USER (bukan ADMIN), langsung lempar 403 Forbidden!
         if (!hasRole) {
-          throw new ForbiddenException('Akses ditolak! Hanya ADMIN yang boleh mengakses rute ini.');
+          throw new ForbiddenException('Akses Ditolak! Role USER tidak diizinkan untuk melakukan CRUD Bus.');
         }
       }
 
-      return true; // Token valid dan Role cocok!
+      return true; // Token valid dan role sesuai (ADMIN), akses diberikan!
     } catch (err) {
-      throw new UnauthorizedException('Sesi token Anda telah berakhir atau tidak valid');
+      // Menangani jika ada error custom dari ForbiddenException di atas agar tidak tertimpa
+      if (err instanceof ForbiddenException) {
+        throw err;
+      }
+      throw new UnauthorizedException('Sesi login Anda telah berakhir atau token tidak valid');
     }
   }
 }
