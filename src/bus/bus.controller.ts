@@ -38,8 +38,14 @@ export class BusController {
     return this.busService.update(+id, dto);
   }
 
+  // 🔥 PERUBAHAN DI SINI: Menggunakan async/await untuk mengirim pesan custom
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.busService.remove(+id);
+  async remove(@Param('id') id: string) {
+    await this.busService.remove(+id);
+    
+    return {
+      statusCode: 200,
+      message: `Bus dengan ID ${id} telah berhasil dihapus`,
+    };
   }
 }

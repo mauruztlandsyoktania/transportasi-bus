@@ -1,25 +1,30 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsInt, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateBusDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'Harapan Jaya', description: 'Nama PO Bus' })
   @IsString()
+  @IsNotEmpty()
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Jakarta', description: 'Kota Asal' })
   @IsString()
+  @IsNotEmpty()
   fromCity: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'Surabaya', description: 'Kota Tujuan' })
   @IsString()
+  @IsNotEmpty()
   toCity: string;
 
-  @ApiProperty()
-  @IsInt()
+  @ApiProperty({ example: 350000, description: 'Harga Tiket Bus' })
+  @IsNumber()
+  @IsNotEmpty()
   price: number;
 
-  @ApiProperty()
-  @IsInt()
-  @Min(1)
+  // 👈 KODINGAN INI YANG MEMBUAT SEATS OTOMATIS MUNCUL DI SWAGGER
+  @ApiProperty({ example: 40, description: 'Total Kapasitas Kursi Bus' })
+  @IsNumber()
+  @IsNotEmpty()
   seats: number;
 }

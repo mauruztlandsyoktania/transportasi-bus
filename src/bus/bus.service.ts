@@ -1,41 +1,55 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
-type Bus = {
-  id: number;
-  name: string;
-  plateNumber: string;
-  capacity: number;
-};
+import { PrismaService } from '../prisma/prisma.service'; // Sesuaikan path-nya
 
 @Injectable()
 export class BusService {
-  private buses: Bus[] = [];
-  private id = 1;
+  constructor(private readonly prisma: PrismaService) {}
 
-  create(dto: any) {
-    const bus: Bus = { id: this.id++, ...dto };
-    this.buses.push(bus);
-    return bus;
+  // FIX PERUBAHAN DI SINI: Menyesuaikan dengan model Bus di schema.prisma
+  async create(dto: any) {
+    return this.prisma.bus.create({
+      data: {
+        name: dto.name,
+        fromCity: dto.fromCity,
+        toCity: dto.toCity,
+        price: Number(dto.price), // Memastikan bertipe Int/Number
+        seats: Number(dto.seats), // Memastikan bertipe Int/Number
+      },
+    });
   }
 
-  findAll() {
-    return this.buses;
+  async findAll() {
+    return this.prisma.bus.findMany();
   }
 
-  findOne(id: number) {
-    const bus = this.buses.find(b => b.id === id);
+  async findOne(id: number) {
+    const bus = await this.prisma.bus.findUnique({
+      where: { id },
+    });
     if (!bus) throw new NotFoundException('Bus not found');
     return bus;
   }
 
-  update(id: number, dto: any) {
-    const bus = this.findOne(id);
-    Object.assign(bus, dto);
-    return bus;
+  async update(id: number, dto: any) {
+    await this.findOne(id);
+
+    return this.prisma.bus.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        fromCity: dto.fromCity,
+        toCity: dto.toCity,
+        price: dto.price ? Number(dto.price) : undefined,
+        seats: dto.seats ? Number(dto.seats) : undefined,
+      },
+    });
   }
 
-  remove(id: number) {
-    const index = this.buses.findIndex(b => b.id === id);
-    return this.buses.splice(index, 1);
+  async remove(id: number) {
+    await this.findOne(id);
+
+    return this.prisma.bus.delete({
+      where: { id },
+    });
   }
 }

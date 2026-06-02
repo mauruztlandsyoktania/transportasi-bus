@@ -1,12 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { PartialType } from '@nestjs/swagger';
+import { CreateBusDto } from './create-bus.dto';
 
-export class UpdateBusDto {
-  @ApiProperty({ required: false })
-  name?: string;
-
-  @ApiProperty({ required: false })
-  plateNumber?: string;
-
-  @ApiProperty({ required: false })
-  capacity?: number;
-}
+export class UpdateBusDto extends PartialType(CreateBusDto) {}
