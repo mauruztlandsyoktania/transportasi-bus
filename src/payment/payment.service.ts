@@ -5,7 +5,7 @@ type Payment = {
   id: number;
   bookingId: number;
   amount: number;
-  status: any; // Menggunakan 'any' atau sesuaikan dengan isi PaymentStatus Anda
+  status: any; 
   createdAt: Date;
 };
 
@@ -14,13 +14,13 @@ export class PaymentService {
   private payments: Payment[] = [];
   private id = 1;
 
-  // CREATE PAYMENT → PENDING
+  // CREATE PAYMENT → LANGSUNG SUCCESS
   create(dto: any) {
     const payment: Payment = {
       id: this.id++,
       bookingId: dto.bookingId,
       amount: dto.amount,
-      status: 'PENDING', // Menggunakan string langsung agar aman
+      status: 'SUCCESS', // 👈 Diubah dari 'PENDING' menjadi 'SUCCESS'
       createdAt: new Date(),
     };
 
@@ -28,7 +28,7 @@ export class PaymentService {
     return payment;
   }
 
-  // 👇 SEKARANG MENGUBAH STATUS MENJADI SUCCESS
+  // MENGUBAH STATUS MENJADI SUCCESS
   setToSuccess(id: number) {
     const payment = this.payments.find((p) => p.id === id);
 
@@ -36,7 +36,7 @@ export class PaymentService {
       throw new NotFoundException(`Payment dengan ID ${id} tidak ditemukan`);
     }
 
-    payment.status = 'SUCCESS'; // 👈 Langsung di-hardcode ke string 'SUCCESS'
+    payment.status = 'SUCCESS'; 
     return payment;
   }
 
