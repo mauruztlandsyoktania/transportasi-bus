@@ -1,11 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common'; 
 import { PaymentStatus } from './payment-status.enum';
 
 type Payment = {
   id: number;
   bookingId: number;
   amount: number;
-  status: PaymentStatus;
+  status: any; // Menggunakan 'any' atau sesuaikan dengan isi PaymentStatus Anda
   createdAt: Date;
 };
 
@@ -20,7 +20,7 @@ export class PaymentService {
       id: this.id++,
       bookingId: dto.bookingId,
       amount: dto.amount,
-      status: PaymentStatus.PENDING,
+      status: 'PENDING', // Menggunakan string langsung agar aman
       createdAt: new Date(),
     };
 
@@ -28,29 +28,27 @@ export class PaymentService {
     return payment;
   }
 
-  // UPDATE STATUS → PAID
-  pay(id: number) {
+  // 👇 SEKARANG MENGUBAH STATUS MENJADI SUCCESS
+  setToSuccess(id: number) {
     const payment = this.payments.find((p) => p.id === id);
 
     if (!payment) {
-      return { message: 'Payment not found' };
+      throw new NotFoundException(`Payment dengan ID ${id} tidak ditemukan`);
     }
 
-    payment.status = PaymentStatus.PAID;
-
+    payment.status = 'SUCCESS'; // 👈 Langsung di-hardcode ke string 'SUCCESS'
     return payment;
   }
 
-  // OPTIONAL: CANCEL PAYMENT
+  // CANCEL PAYMENT
   cancel(id: number) {
     const payment = this.payments.find((p) => p.id === id);
 
     if (!payment) {
-      return { message: 'Payment not found' };
+      throw new NotFoundException(`Payment dengan ID ${id} tidak ditemukan`);
     }
 
-    payment.status = PaymentStatus.CANCELLED;
-
+    payment.status = 'CANCELLED';
     return payment;
   }
 
