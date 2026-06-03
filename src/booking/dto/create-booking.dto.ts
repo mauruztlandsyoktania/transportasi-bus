@@ -1,9 +1,20 @@
-import { IsNumber } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateBookingDto {
-  @IsNumber()
+  @ApiProperty({
+    description: 'ID dari bus yang akan dipesan',
+    example: 2,
+  })
+  @IsInt()
+  @IsNotEmpty()
   busId: number;
 
-  @IsNumber()
+  @ApiProperty({
+    description: 'Jumlah tiket yang ingin dibeli',
+    example: 2,
+  })
+  @IsInt()
+  @IsNotEmpty()
   jumlahTiket: number;
 }
