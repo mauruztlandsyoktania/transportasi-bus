@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common'; // 👈 Wajib import NotFoundException
 
 type Booking = {
   id: number;
@@ -20,5 +20,18 @@ export class BookingService {
 
   findAll() {
     return this.bookings;
+  }
+
+  // 👇 TAMBAHKAN FUNGSI INI UNTUK MENANGKAP ID NGASAL
+  findOne(id: number) {
+    const booking = this.bookings.find((b) => b.id === id);
+
+    // Jika hasil pencarian kosong (ID tidak ada di array memory)
+    if (!booking) {
+      throw new NotFoundException(`Booking dengan ID ${id} tidak ditemukan`); // 👈 Auto error 404
+    }
+
+    // Jika ketemu, kembalikan datanya ke controller
+    return booking;
   }
 }

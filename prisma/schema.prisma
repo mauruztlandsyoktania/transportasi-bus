@@ -57,15 +57,12 @@ model Payment {
 }
 
 enum PaymentMethod {
-  CASH
   EWALLET
   TRANSFER
 }
 
 enum PaymentStatus {
   SUCCESS
-  FAILED
-  PENDING
 }
 
 enum Role {
