@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'; // 👈 Tambah BadRequestException
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateBusDto } from './dto/create-bus.dto';
 import { UpdateBusDto } from './dto/update-bus.dto';
@@ -14,21 +14,21 @@ export class BusService {
     });
   }
 
-  // 2. GET SEMUA BUS (Termasuk Riwayat Pemesanan/Booking)
+  // 2. GET SEMUA BUS
   async findAll() {
     return this.prisma.bus.findMany({
       include: {
-        bookings: true, // 👈 SESUAIKAN dengan nama relasi booking di schema.prisma milikmu (misal: bookings, Booking, atau transactions)
+        bookings: true, 
       },
     });
   }
 
-  // 3. GET DETAIL BUS (Termasuk Riwayat Pemesanan/Booking)
+  // 3. GET DETAIL BUS (Aman dari ID Ngasal)
   async findOne(id: number) {
     const bus = await this.prisma.bus.findUnique({
       where: { id },
       include: {
-        bookings: true, // 👈 SESUAIKAN dengan nama relasi booking di schema.prisma milikmu
+        bookings: true, 
       },
     });
 
@@ -39,18 +39,26 @@ export class BusService {
     return bus;
   }
 
-  // 4. EDIT BUS
+  // 4. EDIT BUS (Aman dari ID Ngasal)
   async update(id: number, updateBusDto: UpdateBusDto) {
-    await this.findOne(id); // Cek apakah bus ada
+    await this.findOne(id); 
     return this.prisma.bus.update({
       where: { id },
       data: updateBusDto,
     });
   }
 
-  // 5. HAPUS BUS
+  // 5. HAPUS BUS (Aman dari ID Ngasal & Aman dari Crash Relasi Data)
   async remove(id: number) {
-    await this.findOne(id); // Cek apakah bus ada
+    const bus = await this.findOne(id); // Ambil data bus beserta data bookings-nya
+
+    // 👇 Cek apakah bus ini sudah pernah dibooking orang
+    if (bus.bookings && bus.bookings.length > 0) {
+      throw new BadRequestException(
+        `Bus dengan ID ${id} tidak dapat dihapus karena sudah memiliki riwayat pemesanan/booking aktif`,
+      );
+    }
+
     return this.prisma.bus.delete({
       where: { id },
     });

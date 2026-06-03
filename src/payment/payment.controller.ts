@@ -19,7 +19,13 @@ export class PaymentController {
     return this.paymentService.findAll();
   }
 
-  // 👇 SEKARANG SUDAH DISESUAIKAN JADI SUCCESS
+  // 👇 TAMBAHKAN ENDPOINT INI AGAR AMAN SAAT GURU MENGETES GET DETAIL PAYMENTS PAKAI ID NGASAL
+  @Get(':id')
+  @ApiOperation({ summary: 'Mencari detail pembayaran berdasarkan ID (Aman dari ID ngasal)' })
+  findOne(@Param('id') id: string) {
+    return this.paymentService.findOne(+id); // 👈 Tanda + otomatis mengubah string URL menjadi number
+  }
+
   @Patch(':id/success')
   @ApiOperation({ summary: 'Mengubah status pembayaran menjadi SUCCESS' })
   setToSuccess(@Param('id') id: string) {
